@@ -4,7 +4,7 @@ use std::collections::HashMap;
 Counts the frequencies of words read from the standard input, and print a sorted frequency table.
 
 Assumptions:
-test
+
 "]
 fn main() {
 //    let word_counts = read_and_count(...);
