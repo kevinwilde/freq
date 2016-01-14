@@ -1,16 +1,39 @@
 #[doc="
-Counts the frequencies of words read from the standard input, and print a sorted frequency table.
+Counts the frequencies of words read from the standard input, and prints a sorted frequency table.
 
 Assumptions:
 
 "]
 fn main() {
-//    let word_counts = read_and_count(...);
-//    let sorted_word_counts = sort_by_value(word_counts);
-//    print_counts(sorted_word_counts);
+    let mut map = CountTable::new();
+    let word_counts = read_and_count(&mut map);
+    print_counts(&word_counts);
 }
 
 type CountTable = std::collections::HashMap<String, usize>;
+
+fn read_input() -> Vec<String> {
+    let mut v = std::vec::Vec::new();
+    let mut input = std::string::String::new();
+    match std::io::stdin().read_line(&mut input) {
+        Ok(n) => {
+            let tmp: Vec<_> = input.split(' ').collect();
+            for elem in tmp {
+                v.push(elem.to_owned());
+            }
+        }
+        Err(e) => panic!("Error in read_input: {}", e),
+    }
+    v
+}
+
+fn read_and_count(map: &mut CountTable) -> Vec<(&String, &usize)> {
+    let v: Vec<String> = read_input();    
+    for w in v {
+        increment_word(map, w);
+    }
+    sort_by_value(map)
+}
 
 fn increment_word(map: &mut CountTable, word: String) {
     *map.entry(word).or_insert(0) += 1;
@@ -22,17 +45,19 @@ fn sort_by_value(map: &CountTable) -> Vec<(&String, &usize)> {
     v
 }
 
-fn print_counts(v: Vec<(String, usize)>) {
+fn print_counts(v: &Vec<(&String, &usize)>) {
     for elem in v {
-        println!("{}: {}", elem.0, elem.1);
+        println!("{}: {}", *(elem.0), *(elem.1));
     }
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
 
 #[cfg(test)]
 mod increment_word_tests {
     use super::increment_word;
-    use super::CountTable; 
-
+    use super::CountTable;
+ 
     #[test]
     fn insert_if_empty() {
         let mut h = CountTable::new();
