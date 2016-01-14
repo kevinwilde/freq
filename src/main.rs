@@ -16,7 +16,7 @@ fn increment_word(map: &mut CountTable, word: String) {
     *map.entry(word).or_insert(0) += 1;
 }
 
-fn sort_by_value(map: CountTable) -> Vec<(String, usize)> {
+fn sort_by_value(map: &CountTable) -> Vec<(&String, &usize)> {
     let mut v = map.iter().collect::<Vec<_>>();
     v.sort_by(|a, b| b.1.cmp(a.1));
     v
@@ -83,7 +83,7 @@ mod sort_by_value_tests {
     #[test]
     fn sort_nonempty_hashmap() {
         let h = fixture();
-        let v = sort_by_value(h);
+        let v = sort_by_value(&h);
         let size = v.len();
         for i in 0..(size - 1) {
             assert!(v[i].1 >= v[i+1].1);
