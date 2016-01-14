@@ -84,8 +84,9 @@ mod sort_by_value_tests {
     fn sort_nonempty_hashmap() {
         let h = fixture();
         let v = sort_by_value(&h);
-        let size = v.len();
-        for i in 0..(size - 1) {
+        let v_size = v.len();
+	assert_eq!(v_size, h.len());
+        for i in 0..(v_size - 1) {
             assert!(v[i].1 >= v[i+1].1);
         }
     }
