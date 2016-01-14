@@ -6,8 +6,7 @@ Assumptions:
 "]
 fn main() {
 //    let word_counts = read_and_count(...);
-//    let sorted_word_counts = sort_by_value(word_counts);
-//    print_counts(sorted_word_counts);
+//    print_counts(word_counts);
 }
 
 type CountTable = std::collections::HashMap<String, usize>;
@@ -17,15 +16,8 @@ fn increment_word(map: &mut CountTable, word: String) {
 }
 
 fn sort_by_value(map: CountTable) -> Vec<(String, usize)> {
-    let mut v = map.iter().collect::<Vec<_>>();
-    v.sort_by(|a, b| b.1.cmp(a.1));
-    v
-}
-
-fn print_counts(v: Vec<(String, usize)>) {
-    for elem in v {
-        println!("{}: {}", elem.0, elem.1);
-    }
+    let mut vec: Vec<(String, usize)> = map.iter().collect();
+    return vec.sort_by(|word, count| count.1.cmp(word.1));
 }
 
 #[cfg(test)]
@@ -53,7 +45,7 @@ mod increment_word_tests {
     }
 
     #[test]
-    fn insert_if_absent() {
+    fn insert_if_absent(){
         let mut under_test = fixture();
         let mut expected = fixture();
 
@@ -78,17 +70,7 @@ mod increment_word_tests {
 #[cfg(test)]
 mod sort_by_value_tests {
     use super::sort_by_value;
-    use super::CountTable;
-
-    #[test]
-    fn sort_nonempty_hashmap() {
-        let h = fixture();
-        let v = sort_by_value(h);
-        let size = v.len();
-        for i in 0..(size - 1) {
-            assert!(v[i].1 >= v[i+1].1);
-        }
-    }
+    use super::CountTable; 
 
     fn fixture() -> CountTable {
         let mut h = CountTable::new();
