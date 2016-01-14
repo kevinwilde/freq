@@ -4,6 +4,9 @@ Counts the frequencies of words read from the standard input, and prints a sorte
 Assumptions:
 
 "]
+
+use std::io::{BufRead, BufReader, Read, stdin};
+
 fn main() {
     let mut map = CountTable::new();
     let word_counts = read_and_count(&mut map);
@@ -12,28 +15,88 @@ fn main() {
 
 type CountTable = std::collections::HashMap<String, usize>;
 
-fn read_input() -> Vec<String> {
-    let mut v = std::vec::Vec::new();
-    let mut input = std::string::String::new();
-    match std::io::stdin().read_line(&mut input) {
-        Ok(n) => {
-            let tmp: Vec<_> = input.split(' ').collect();
-            for elem in tmp {
-                v.push(elem.to_owned());
-            }
-        }
-        Err(e) => panic!("Error in read_input: {}", e),
-    }
-    v
-}
-
 fn read_and_count(map: &mut CountTable) -> Vec<(&String, &usize)> {
-    let v: Vec<String> = read_input();    
+    let v: Vec<String> = read_input(stdin());    
     for w in v {
         increment_word(map, w);
     }
     sort_by_value(map)
 }
+
+fn read_input<R: Read>(reader: R) -> Vec<String> {
+    let mut v = std::vec::Vec::new();
+    let mut lines = BufReader::new(reader).lines();
+    while let Some(Ok(line)) = lines.next() {
+        let tmp: Vec<&str> = line.split(' ').collect();
+        for elem in tmp {
+            v.push(elem.to_owned());
+        }
+    }
+    //match std::io::stdin().read_line(&mut input) {
+    //    Ok(n) => {
+    //        let tmp: Vec<_> = input.split(' ').collect();
+    //        for elem in tmp {
+    //            v.push(elem.to_owned());
+    //       }
+    //    }
+    //    Err(e) => panic!("Error in read_input: {}", e),
+    //}
+    v
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+#[cfg(test)]
+mod read_measurements_tests {
+    use super::{read_input};
+    use std::io::{Read, Result};
+
+    #[test]
+    fn reads_three_words_on_separate_lines() {
+        assert_read(&["hi", "hello", "hey"], "hi\nhello\nhey\n");
+    }
+
+    #[test]
+    fn reads_three_words_on_same_line() {
+        assert_read(&["hi", "hello", "hey"], "hi hello hey\n");
+    }
+
+    fn assert_read(expected: &[&str], input: &str) {
+        let mock_read = StringReader::new(input.to_owned());
+        let v = read_input(mock_read);
+        assert_eq!(expected.len(), v.len());
+        for i in 0..v.len() {
+            assert_eq!(expected[i], v[i]);
+        }
+        //assert_eq!(expected, &v);
+    }
+    
+    struct StringReader {
+        contents: Vec<u8>,
+        position: usize,
+    }
+
+    impl StringReader {
+        fn new(s: String) -> Self {
+            StringReader {
+                contents: s.into_bytes(),
+                position: 0,
+            }
+        }
+    }
+
+    impl Read for StringReader {
+        fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
+            let mut count = 0;
+            while self.position < self.contents.len() && count < buf.len() {
+                buf[count] = self.contents[self.position];
+                count += 1;
+                self.position += 1;
+            }
+            Ok(count)
+        }
+    }
+}
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 fn increment_word(map: &mut CountTable, word: String) {
     *map.entry(word).or_insert(0) += 1;
