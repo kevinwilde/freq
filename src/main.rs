@@ -1,8 +1,17 @@
+// Kevin Wilde
+// NETID: kjw731
+// EECS 395
+
 #[doc="
 Counts the frequencies of words read from the standard input, and prints a sorted frequency table.
 
 Assumptions:
-
+    Words do not include any characters except letters and apostrophes.
+    Numbers are not words, nor is there such a thing as word that contains a mix of letter(s) and number(s).
+    Since apostrophes are considered to be part of a word, don't and don are two separate words (probably not too
+    much debate there), but also for instance, Smith and Smith's are considered two separate words (perhaps
+    slightly more debatable).
+    Hyphenated words are split into separate words. Thus, "He is good-looking" would count "good" and "looking" separately.
 "]
 
 use std::io::{BufRead, BufReader, Read, stdin};
@@ -27,9 +36,12 @@ fn read_input<R: Read>(reader: R) -> Vec<String> {
     let mut v = std::vec::Vec::new();
     let mut lines = BufReader::new(reader).lines();
     while let Some(Ok(line)) = lines.next() {
-        let tmp: Vec<&str> = line.split(' ').collect();
+        let lower_line = line.to_lowercase();
+        let tmp: Vec<&str> = lower_line.split(|c: char| !"abcdefghijklmnopqrstuvwxyz'".contains(c)).collect();
         for elem in tmp {
-            v.push(elem.to_owned());
+            if elem.len() > 0 {
+                v.push(elem.to_owned());
+            }
         }
     }
     //match std::io::stdin().read_line(&mut input) {
