@@ -11,7 +11,7 @@ Assumptions:
     Since apostrophes are considered to be part of a word, don't and don are two separate words (probably not too
     much debate there), but also for instance, Smith and Smith's are considered two separate words (perhaps
     slightly more debatable).
-    Hyphenated words are split into separate words. Thus, "He is good-looking" would count "good" and "looking" separately.
+    Hyphenated words are split into separate words. Thus, ``He is good-looking`` would count ``good`` and ``looking`` separately.
 "]
 
 use std::io::{BufRead, BufReader, Read, stdin};
