@@ -6,12 +6,18 @@
 Counts the frequencies of words read from the standard input, and prints a sorted frequency table.
 
 Assumptions:
-    Words do not include any characters except letters and apostrophes.
-    Numbers are not words, nor is there such a thing as word that contains a mix of letter(s) and number(s).
+    Words do not include any characters except alphabetic characters and apostrophes.
+    Numbers are not words.
+    If there is a number in the middle of a group of letters, like `ab3cd`, this will result in the program
+    counting `ab` and `cd`.
     Since apostrophes are considered to be part of a word, don't and don are two separate words (probably not too
     much debate there), but also for instance, Smith and Smith's are considered two separate words (perhaps
     slightly more debatable).
-    Hyphenated words are split into separate words. Thus, ``He is good-looking`` would count ``good`` and ``looking`` separately.
+    Hyphenated words are split into separate words. Thus, `He is good-looking` would count `good` and `looking` separately.
+    
+    Output:
+        Words are printed in descending order of frequency.
+        Words with the same frequency are printed in no particular order.
 "]
 
 use std::io::{BufRead, BufReader, Read, stdin};
@@ -37,26 +43,16 @@ fn read_input<R: Read>(reader: R) -> Vec<String> {
     let mut lines = BufReader::new(reader).lines();
     while let Some(Ok(line)) = lines.next() {
         let lower_line = line.to_lowercase();
-        let tmp: Vec<&str> = lower_line.split(|c: char| !"abcdefghijklmnopqrstuvwxyz'".contains(c)).collect();
+        let tmp: Vec<&str> = lower_line.split(|c: char| !c.is_alphabetic() && c != '\'').collect();
         for elem in tmp {
             if elem.len() > 0 {
                 v.push(elem.to_owned());
             }
         }
     }
-    //match std::io::stdin().read_line(&mut input) {
-    //    Ok(n) => {
-    //        let tmp: Vec<_> = input.split(' ').collect();
-    //        for elem in tmp {
-    //            v.push(elem.to_owned());
-    //       }
-    //    }
-    //    Err(e) => panic!("Error in read_input: {}", e),
-    //}
     v
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
 #[cfg(test)]
 mod read_measurements_tests {
     use super::{read_input};
@@ -108,7 +104,6 @@ mod read_measurements_tests {
         }
     }
 }
-///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 fn increment_word(map: &mut CountTable, word: String) {
     *map.entry(word).or_insert(0) += 1;
@@ -125,8 +120,6 @@ fn print_counts(v: &Vec<(&String, &usize)>) {
         println!("{}: {}", *(elem.0), *(elem.1));
     }
 }
-
-//////////////////////////////////////////////////////////////////////////////////////////////////
 
 #[cfg(test)]
 mod increment_word_tests {
