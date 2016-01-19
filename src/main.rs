@@ -7,12 +7,15 @@ Counts the frequencies of words read from the standard input, and prints a sorte
 
 Assumptions:
     Words do not include any characters except alphabetic characters and apostrophes.
+    The program is not case sensitive. `Hello` and `hello` count as the same word.
     Numbers are not words.
     If there is a number in the middle of a group of letters, like `ab3cd`, this will result in the program
     counting `ab` and `cd`.
-    Since apostrophes are considered to be part of a word, don't and don are two separate words (probably not too
-    much debate there), but also for instance, Smith and Smith's are considered two separate words (perhaps
-    slightly more debatable).
+    Apostrophes are part of words. This allows the program to count contractions, slang words (ex. shortening 
+    because to 'cause), and possessive words. The followin examples are all counted as different words:
+        won't vs. wont
+        'cause vs. cause
+        Smiths vs. Smith's vs. Smiths'
     Hyphenated words are split into separate words. Thus, `He is good-looking` would count `good` and `looking` separately.
     
     Output:
@@ -68,6 +71,16 @@ mod read_measurements_tests {
         assert_read(&["hi", "hello", "hey"], "hi hello hey\n");
     }
 
+    #[test]
+    fn splits_on_invalid_chars() {
+        assert_read(&["hi", "my", "name", "is", "kevin", "i", "don't", "like", "the", "one"], "hi8 my name&is Kevin. I don't like the # 3. One=1.")
+    }
+
+    #[test]
+    fn splits_on_invalid_chars_multi_line() {
+        assert_read(&["hi", "my", "name", "is", "kevin", "i", "don't", "like", "the", "one"], "hi8 my\nname&is Kevin.\n I don't\nlike the # 3. One=1.")
+    }
+
     fn assert_read(expected: &[&str], input: &str) {
         let mock_read = StringReader::new(input.to_owned());
         let v = read_input(mock_read);
@@ -75,7 +88,6 @@ mod read_measurements_tests {
         for i in 0..v.len() {
             assert_eq!(expected[i], v[i]);
         }
-        //assert_eq!(expected, &v);
     }
     
     struct StringReader {
@@ -178,7 +190,7 @@ mod sort_by_value_tests {
         let h = fixture();
         let v = sort_by_value(&h);
         let v_size = v.len();
-	assert_eq!(v_size, h.len());
+        assert_eq!(v_size, h.len());
         for i in 0..(v_size - 1) {
             assert!(v[i].1 >= v[i+1].1);
         }
