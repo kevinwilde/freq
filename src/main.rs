@@ -6,19 +6,19 @@
 Counts the frequencies of words read from the standard input, and prints a sorted frequency table.
 
 Assumptions:
-    Words do not include any characters except alphabetic characters and apostrophes.
+    Words do not include any characters except alphabetic characters and apostrophes and periods (to allow acronyms).
     The program is not case sensitive. `Hello` and `hello` count as the same word.
     Numbers are not words.
     If there is a number in the middle of a group of letters, like `ab3cd`, this will result in the program
     counting `ab` and `cd`.
-    Apostrophes are part of words. This allows the program to count contractions, slang words (ex. shortening 
-    because to 'cause), and possessive words. The followin examples are all counted as different words:
-        won't vs. wont
-        'cause vs. cause
-        Smiths vs. Smith's vs. Smiths'
+    Apostrophes are part of words as long as they are not at the beginnig or end. 
+    This allows the program to count contractions, but to trim apostrophes that surround words.
+    Examples:
+        won't vs. wont vs. won -- DIFFERENT
+        'hello' vs. 'hello vs. hello -- SAME
+    Periods are trimmed from the beginning and end of words. Abbreviations like `etc.` will be counted as just `etc`.
+    Acronyms separated by periods will have the last period removed (ex. `E.E.C.S.` would show up in the output as `e.e.c.s`).
     Hyphenated words are split into separate words. Thus, `He is good-looking` would count `good` and `looking` separately.
-    Periods are not part of words. Abbreviations like `etc.` will be counted as just `etc`. Acronyms will be split up
-    if a period is placed between every letter (ex. `E.E.C.S. would count `E` twice, `C` once, and `S` once).
     
     Output:
         Words are printed in lowercase in descending order of frequency.
@@ -48,10 +48,20 @@ fn read_input<R: Read>(reader: R) -> Vec<String> {
     let mut lines = BufReader::new(reader).lines();
     while let Some(Ok(line)) = lines.next() {
         let lower_line = line.to_lowercase();
-        let tmp: Vec<&str> = lower_line.split(|c: char| !c.is_alphabetic() && c != '\'').collect();
-        for elem in tmp {
-            if elem.len() > 0 {
-                v.push(elem.to_owned());
+        let tmp: Vec<&str> = lower_line.split(|c: char| !c.is_alphabetic() && c != '\'' && c != '.').collect();
+        for elem in tmp {            
+            let mut word = &elem[..];
+            let mut size = word.len();
+            while size > 0 && (word.chars().nth(0).unwrap() == '\'' || word.chars().nth(0).unwrap() == '.') {
+                word = &word[1..];
+                size -= 1;
+            }
+            while size > 0 && (word.chars().nth(size-1).unwrap() == '\'' || word.chars().nth(size-1).unwrap() == '.') {
+                word = &word[..(size-1)];
+                size -= 1;
+            }
+            if word.len() > 0 {
+                v.push(word.to_owned());
             }
         }
     }
@@ -65,7 +75,7 @@ mod read_measurements_tests {
 
     #[test]
     fn reads_three_words_on_separate_lines() {
-        assert_read(&["hi", "hello", "hey"], "hi\nhello\nhey\n");
+        assert_read(&["hi", "hello", "hey"], "'...''hi...\nhello\nhey\n");
     }
 
     #[test]
@@ -74,20 +84,30 @@ mod read_measurements_tests {
     }
 
     #[test]
+    fn trims_beginning_and_trailing_apostrophes_and_periods() {
+        assert_read(&["hi", "hello", "hey"], "'...''hi...\n''...'..'hello...'\n'..'..'.hey\n");
+    }
+
+    #[test]
+    fn handles_acronyms() {
+        assert_read(&["i", "am", "a", "student", "in", "the", "e.e.c.s", "department"], "I am a student \nin the E.E.C.S. department!!\n");
+    }
+
+    #[test]
     fn splits_on_invalid_chars() {
-        assert_read(&["hi", "my", "name", "is", "kevin", "i", "don't", "like", "the", "one"], "hi8 my name&is Kevin. I don't like the # 3. One=1.")
+        assert_read(&["hi", "my", "name", "is", "kevin", "i", "don't", "like", "the", "one"], "hi8 my name&is Kevin. I don't like the # 3.14159. One=1.")
     }
 
     #[test]
     fn splits_on_invalid_chars_multi_line() {
-        assert_read(&["hi", "my", "name", "is", "kevin", "i", "don't", "like", "the", "one"], "hi8 my\nname&is Kevin.\n I don't\nlike the # 3. One=1.")
+        assert_read(&["hi", "my", "name", "is", "kevin", "i", "don't", "like", "the", "one"], "hi8 my\nname&is Kevin!!!!\n I don't\nlike the # 3. One=1.\n%$#^$^")
     }
 
     fn assert_read(expected: &[&str], input: &str) {
         let mock_read = StringReader::new(input.to_owned());
         let v = read_input(mock_read);
         assert_eq!(expected.len(), v.len());
-        for i in 0..v.len() {
+        for i in 0..(v.len()) {
             assert_eq!(expected[i], v[i]);
         }
     }
