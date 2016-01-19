@@ -17,9 +17,11 @@ Assumptions:
         'cause vs. cause
         Smiths vs. Smith's vs. Smiths'
     Hyphenated words are split into separate words. Thus, `He is good-looking` would count `good` and `looking` separately.
+    Periods are not part of words. Abbreviations like `etc.` will be counted as just `etc`. Acronyms will be split up
+    if a period is placed between every letter (ex. `E.E.C.S. would count `E` twice, `C` once, and `S` once).
     
     Output:
-        Words are printed in descending order of frequency.
+        Words are printed in lowercase in descending order of frequency.
         Words with the same frequency are printed in no particular order.
 "]
 
