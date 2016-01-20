@@ -24,7 +24,7 @@ Assumptions:
     
     Output:
         Words are printed in lowercase in descending order of frequency.
-        Words with the same frequency are printed in no particular order.
+        Words with the same frequency are printed in alphabetic order.
 "]
 
 use std::io::{BufRead, BufReader, Read, stdin};
@@ -152,7 +152,18 @@ fn increment_word(map: &mut CountTable, word: String) {
 
 fn sort_by_value(map: &CountTable) -> Vec<(&String, &usize)> {
     let mut v = map.iter().collect::<Vec<_>>();
-    v.sort_by(|a, b| b.1.cmp(a.1));
+    v.sort_by(|a, b|  {
+        
+        // Sort by freqency
+        if a.1 != b.1 {
+            b.1.cmp(a.1)
+        }
+
+        // If equal frequencies, sort alphabetically 
+        else {
+            a.0.cmp(b.0)
+        }
+    });
     v
 }
 
@@ -221,7 +232,8 @@ mod sort_by_value_tests {
         let v_size = v.len();
         assert_eq!(v_size, h.len());
         for i in 0..(v_size - 1) {
-            assert!(v[i].1 >= v[i+1].1);
+            // Either higher frequency, or equal frequency and alphabetic
+            assert!((v[i].1 > v[i+1].1) || (v[i].1 == v[i+1].1 && v[i].0 < v[i+1].0));
         }
     }
 
@@ -229,11 +241,19 @@ mod sort_by_value_tests {
         let mut h = CountTable::new();
         h.insert("two".to_owned(), 2);
         h.insert("three".to_owned(), 3);
+        h.insert("hi".to_owned(), 3);
+        h.insert("a".to_owned(), 3);
+        h.insert("seven".to_owned(), 7);
+        h.insert("what".to_owned(), 2);
+        h.insert("is".to_owned(), 1);
+        h.insert("up".to_owned(), 1);
+        h.insert("four".to_owned(), 4);
+        h.insert("tres".to_owned(), 3);
         
         assert_eq!(None, h.get("one"));
         assert_eq!(Some(&2), h.get("two"));
         assert_eq!(Some(&3), h.get("three"));
-        assert_eq!(2, h.len());
+        assert_eq!(10, h.len());
         h
     }
 }
