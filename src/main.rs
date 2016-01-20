@@ -7,7 +7,7 @@ Counts the frequencies of words read from the standard input, and prints a sorte
 
 Assumptions:
     Words do not include any characters except alphabetic characters and apostrophes and periods (to allow acronyms).
-    The program is not case sensitive. `Hello` and `hello` count as the same word.
+    The program is not case sensitive (all words are converted to lowercase). `Hello` and `hello` count as the same word.
     Numbers are not words.
     If there is a number in the middle of a group of letters, like `ab3cd`, this will result in the program
     counting `ab` and `cd`.
@@ -16,6 +16,8 @@ Assumptions:
     Examples:
         won't vs. wont vs. won -- DIFFERENT
         'hello' vs. 'hello vs. hello -- SAME
+    Of course this also means that, for example, 'cause (short for because) is counted the same as `cause`.
+    Similarly, Smiths' is counted the same as Smiths, while Smith's is different because the apostrophe is not at the beginning or end.
     Periods are trimmed from the beginning and end of words. Abbreviations like `etc.` will be counted as just `etc`.
     Acronyms separated by periods will have the last period removed (ex. `E.E.C.S.` would show up in the output as `e.e.c.s`).
     Hyphenated words are split into separate words. Thus, `He is good-looking` would count `good` and `looking` separately.
@@ -52,14 +54,19 @@ fn read_input<R: Read>(reader: R) -> Vec<String> {
         for elem in tmp {            
             let mut word = &elem[..];
             let mut size = word.len();
+
+            // Remove leading apostrophes and periods
             while size > 0 && (word.chars().nth(0).unwrap() == '\'' || word.chars().nth(0).unwrap() == '.') {
                 word = &word[1..];
                 size -= 1;
             }
+
+            // Remove trailing apostrophes and periods
             while size > 0 && (word.chars().nth(size-1).unwrap() == '\'' || word.chars().nth(size-1).unwrap() == '.') {
                 word = &word[..(size-1)];
                 size -= 1;
             }
+            
             if word.len() > 0 {
                 v.push(word.to_owned());
             }
